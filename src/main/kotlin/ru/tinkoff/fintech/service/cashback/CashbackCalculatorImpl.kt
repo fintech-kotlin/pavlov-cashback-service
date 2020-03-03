@@ -1,11 +1,9 @@
 package ru.tinkoff.fintech.service.cashback
 
 import ru.tinkoff.fintech.model.TransactionInfo
-
+import java.math.RoundingMode
 import java.time.LocalDateTime
-
 import java.time.format.TextStyle
-
 import java.util.*
 
 internal const val LOYALTY_PROGRAM_BLACK = "BLACK"
@@ -19,84 +17,100 @@ class CashbackCalculatorImpl : CashbackCalculator {
 
 
     override fun calculateCashback(transactionInfo: TransactionInfo): Double {
+        with(transactionInfo) {
+            if (cashbackTotalValue >= MAX_CASH_BACK) {
+                return 0.0
+            }
+            var cashback = 0.0
 
-        programmBlack(transactionInfo)
-        additionalCashBack(transactionInfo)
-        programmAll(transactionInfo)
-        programmBeer(transactionInfo)
+            cashback += programmBlack(this)
+            cashback += additionalCashBack(this)
+            cashback += programmAll(this)
+            cashback += programmBeer(this)
 
-        if (transactionInfo.cashbackTotalValue > MAX_CASH_BACK) {
-            return MAX_CASH_BACK;
+            if (cashback + cashbackTotalValue > MAX_CASH_BACK) {
+                return MAX_CASH_BACK - cashbackTotalValue
+            }
+            return cashback
         }
-        return transactionInfo.cashbackTotalValue
-
     }
 
-    private fun programmBlack(transactionInfo: TransactionInfo): Unit {
-        if (transactionInfo.loyaltyProgramName.equals(LOYALTY_PROGRAM_BLACK)) {   //● Если программа лояльности "BLACK", начислить 1% кэшбека
-            transactionInfo.cashbackTotalValue.plus(
-                transactionInfo.transactionSum.plus(
-                    transactionInfo.transactionSum.times(
-                        1.01
-                    )
+    private fun programmBlack(transactionInfo: TransactionInfo): Double {
+        with(transactionInfo) {
+            if (loyaltyProgramName.equals(LOYALTY_PROGRAM_BLACK)) {
+                return transactionSum / 100 * 1
+            }
+            return 0.0
+        }
+    }
+
+    private fun programmAll(transactionInfo: TransactionInfo): Double {
+        with(transactionInfo) {
+            if (mccCode?.equals(MCC_SOFTWARE) ?: false
+                && loyaltyProgramName.equals(LOYALTY_PROGRAM_ALL)
+                && chekPalindrom(transactionSum)
+            ) {
+                val a = firstName.length
+                val b = lastName.length
+                val lcm = lcm(a, b)
+                return (lcm / 1000.0 / 100 * (transactionSum)).toBigDecimal()
+                    .setScale(1, RoundingMode.HALF_EVEN).toDouble()
+            }
+        }
+        return 0.0
+    }
+
+
+
+    private fun programmBeer(transactionInfo: TransactionInfo): Double {
+        with(transactionInfo) {
+            if (loyaltyProgramName.equals(LOYALTY_PROGRAM_BEER) && mccCode!!.equals(
+                    MCC_BEER
                 )
-            )
-        }
-    }
+            ) {
 
-    private fun programmAll(transactionInfo: TransactionInfo): Unit {
-        if (transactionInfo.mccCode!!.equals(MCC_SOFTWARE) && transactionInfo.loyaltyProgramName.equals(
-                LOYALTY_PROGRAM_ALL
-            ) && chekPalindrom(
-                transactionInfo.transactionSum
-            )
-        ) {
-            transactionInfo.cashbackTotalValue.plus(1 + (transactionInfo.firstName.length + transactionInfo.lastName.length) / 1000)
-        }
-    }
-
-    private fun programmBeer(transactionInfo: TransactionInfo): Unit {
-        if (transactionInfo.loyaltyProgramName.equals(LOYALTY_PROGRAM_BEER) && transactionInfo.mccCode!!.equals(MCC_BEER)) {
-
-            if (transactionInfo.firstName.equals("Олег")) {
-                if (transactionInfo.lastName.equals("Олегов")) {
-                    transactionInfo.cashbackTotalValue.plus(transactionInfo.transactionSum * 1.1)
-                } else {
-                    transactionInfo.cashbackTotalValue.plus(transactionInfo.transactionSum * 1.07)
+                if (firstName.toLowerCase().equals("олег")) {
+                    if (lastName.toLowerCase().equals("олегов")) {
+                        return transactionSum / 100 * 10
+                    } else {
+                        return transactionSum / 100 * 7
+                    }
                 }
-                return
+
+                if (LocalDateTime.now().month.getDisplayName(
+                        TextStyle.SHORT,
+                        Locale("ru")
+                    ).toLowerCase().first().equals(
+                        firstName.toLowerCase().first()
+                    )
+                ) {
+                    return transactionSum / 100 * 5
+                }
+
+                if (LocalDateTime.now().plusMonths(1).month.getDisplayName(
+                        TextStyle.SHORT,
+                        Locale("ru")
+                    ).toLowerCase().first().equals(firstName.toLowerCase().first())
+                    || LocalDateTime.now().minusMonths(1).month.getDisplayName(
+                        TextStyle.SHORT,
+                        Locale("ru")
+                    ).toLowerCase().first().equals(firstName.toLowerCase().first())
+                ) {
+                    return transactionSum / 100 * 3
+
+                }
+
+                return transactionSum / 100 * 2
             }
-
-            if (LocalDateTime.now().month.getDisplayName(TextStyle.SHORT, Locale("ru")).toLowerCase().first().equals(
-                    transactionInfo.firstName.toLowerCase().first()
-                )
-            ) {
-                transactionInfo.cashbackTotalValue.plus(transactionInfo.transactionSum * 1.05)
-                return
-            }
-
-            if (LocalDateTime.now().plusMonths(1).month.getDisplayName(
-                    TextStyle.SHORT,
-                    Locale("ru")
-                ).toLowerCase().first().equals(transactionInfo.firstName.toLowerCase().first())
-                || LocalDateTime.now().minusMonths(1).month.getDisplayName(
-                    TextStyle.SHORT,
-                    Locale("ru")
-                ).toLowerCase().first().equals(transactionInfo.firstName.toLowerCase().first())
-            ) {
-                transactionInfo.cashbackTotalValue.plus(transactionInfo.transactionSum * 1.3)
-                return
-            }
-
-            transactionInfo.cashbackTotalValue.plus(transactionInfo.transactionSum * 1.2)
-
         }
+        return 0.0
     }
 
-    private fun additionalCashBack(transactionInfo: TransactionInfo): Unit {
-        if (transactionInfo.cashbackTotalValue.rem(666).equals(0)) {
-            transactionInfo.cashbackTotalValue.plus(6.66)
+    private fun additionalCashBack(transactionInfo: TransactionInfo): Double {
+        if (transactionInfo.transactionSum.rem(666).equals(0.0)) {
+            return 6.66
         }
+        return 0.0
     }
 
     private fun chekPalindrom(double: Double): Boolean {
@@ -104,34 +118,18 @@ class CashbackCalculatorImpl : CashbackCalculator {
         var t = 0
         val l = st.length - 1
         for (s in 0..l / 2) {
-            if (!s.equals(st.get(l))) {
+            if (!st[s].equals(st[l])) {
                 t++
             }
         }
         return t <= 1
     }
+
+    private fun gcd(a: Int, b: Int): Int {
+        return if (b === 0) a else gcd(b, a % b)
+    }
+
+    private fun lcm(a: Int, b: Int): Int {
+        return a / gcd(a, b) * b
+    }
 }
-
-//    val loyaltyProgramName: String,
-//    val transactionSum: Double,
-//    val cashbackTotalValue: Double,
-//    val mccCode: Int? = null,
-//    val clientBirthDate: LocalDate? = null,
-//    val firstName: String,
-//    val lastName: String,
-//    val middleName: String? = null
-
-//Метод должен реализовывать следующие правила*:
-
-
-//● Если программа лояльности "BLACK", начислить 1% кэшбекаBEER"BLACK", начислить 1% кэшбека и mcc код = 5921 и
-//a. Ваше имя "BLACK", начислить 1% кэшбекаОлег"BLACK", начислить 1% кэшбека (или без учета регистра) и фамилия "BLACK", начислить 1% кэшбекаОлегов"BLACK", начислить 1% кэшбека (или без учета регистра) то 10% кешбека
-//b. Ваше имя "BLACK", начислить 1% кэшбекаОлег"BLACK", начислить 1% кэшбека (или без учета регистра) то начислить 7% кешбека
-//c. Первая буква текущего месяца (или на русском, без учета регистра) равна первой букве firstName в
-//транзакции (или на русском, без учета регистра) то 5% кешбека
-//b. Первая буква прошлого или следующего месяца (или на русском, без учета регистра) равна первой
-//букве firstName в транзакции (или на русском, без учета регистра), то 3% кешбека
-//d. иначе 2% кешбека.
-//* * Для всех вышеперечисленных условий установить максимальный размер суммарного вознаграждения за
-//текущий период равным 3000. Вознаграждения по предыдущим транзакциям за текущий период хранятся в
-//переменной transactionInfo.cashbackTotalValue.
