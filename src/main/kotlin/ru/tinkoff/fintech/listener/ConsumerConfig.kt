@@ -56,7 +56,6 @@ class ConsumerConfig {
     }
 
 
-
     @Bean
     fun getObjectMapper(): ObjectMapper {
         return ObjectMapper().registerModules(KotlinModule(), JavaTimeModule())
