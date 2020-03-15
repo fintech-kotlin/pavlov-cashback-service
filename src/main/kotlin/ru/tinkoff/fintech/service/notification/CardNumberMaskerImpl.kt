@@ -3,10 +3,16 @@ package ru.tinkoff.fintech.service.notification
 class CardNumberMaskerImpl: CardNumberMasker {
 
     override fun mask(cardNumber: String, maskChar: Char, start: Int, end: Int): String {
-        require(end >= start) { "Start index cannot be greater than end index" }
+        if (cardNumber.isEmpty()) {
+            return cardNumber
+        }
 
-        return cardNumber
-            .mapIndexed { index, number -> if (index in start until end) maskChar else number }
-            .joinToString("")
+        val maskSize = if (cardNumber.length <= end - 1) cardNumber.length else end
+
+        return cardNumber.replaceRange(start, maskSize, buildString {
+            for (s in 1..maskSize - start) {
+                append(maskChar)
+            }
+        })
     }
 }

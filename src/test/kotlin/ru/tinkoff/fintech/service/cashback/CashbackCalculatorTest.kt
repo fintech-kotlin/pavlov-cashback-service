@@ -49,7 +49,8 @@ class CashbackCalculatorTest {
         assertEquals(500.0, cashbackSum)
     }
 
-    @Test
+
+   @Test
     fun `cash back for sums divisible on 666 increases on 6,66`() {
         val transactionInfo = TransactionInfo(
             loyaltyProgramName = LOYALTY_PROGRAM_BLACK,
