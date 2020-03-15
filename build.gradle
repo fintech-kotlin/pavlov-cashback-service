@@ -62,9 +62,6 @@ dependencies {
     testCompile group: 'com.h2database', name: 'h2', version: '1.4.200'
 }
 
-sourceSets {
-    main.java.srcDirs = 'src/main/kotlin'
-}
 
 test {
     useJUnitPlatform()

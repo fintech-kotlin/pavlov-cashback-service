@@ -10,7 +10,7 @@ spring:
 
 app:
   topic:
-    example: transactions
+    transaction: transactions
 
 logging:
   level:
