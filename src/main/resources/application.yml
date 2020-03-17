@@ -17,3 +17,12 @@ logging:
     root: WARN
     org.springframework.web: INFO
     com.memorynotfound: DEBUG
+
+processing:
+  services:
+    uri:
+      card: http://****/card-service/api/v1/card
+      client: http://****/client-service/api/v1/client
+      loyalty: http://****/loyalty-service/api/v1/program
+      notification: http://****/notification-service/api/v2/client/
+  sign: pavlov

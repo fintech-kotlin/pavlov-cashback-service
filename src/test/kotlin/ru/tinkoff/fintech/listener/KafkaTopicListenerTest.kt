@@ -27,7 +27,6 @@ import ru.tinkoff.fintech.client.CardServiceClient
 import ru.tinkoff.fintech.client.ClientService
 import ru.tinkoff.fintech.client.LoyaltyServiceClient
 import ru.tinkoff.fintech.db.repository.LoyaltyPaymentRepository
-import ru.tinkoff.fintech.model.Card
 import ru.tinkoff.fintech.model.Client
 import ru.tinkoff.fintech.model.LoyaltyProgram
 import ru.tinkoff.fintech.service.notification.NotificationService
