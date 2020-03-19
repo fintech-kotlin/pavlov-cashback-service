@@ -18,6 +18,6 @@ class NotificationServiceClientImpl(
         HttpHeaders().contentType = MediaType.APPLICATION_JSON_UTF8
         val entity = HttpEntity(message, headers)
 
-        RestTemplate().postForEntity("$uri/$clientId/message}", entity, String::class.java) ?: throw RestClientException("error")
+        RestTemplate().postForEntity("$uri/$clientId/$message}", entity, String::class.java) ?: throw RestClientException("error")
     }
 }
