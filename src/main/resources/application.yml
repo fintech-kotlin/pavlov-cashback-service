@@ -24,5 +24,5 @@ processing:
       card: http://13.79.17.165/card-service/api/v1/card
       client: http://13.79.17.165/client-service/api/v1/client
       loyalty: http://13.79.17.165/loyalty-service/api/v1/program
-      notification: http://13.79.17.165/notification-service/api/v2/client/
+      notification: http://13.79.17.165/notification-service/api/v1/client
   sign: pavlov

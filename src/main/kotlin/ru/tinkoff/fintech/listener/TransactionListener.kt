@@ -12,7 +12,6 @@ class TransactionListener(
 
     @KafkaListener(topics = ["\${app.topic.transaction}"])
     fun onMessage(transaction: Transaction) {
-        println(transaction)
         transactionService.handle(transaction)
     }
 }
