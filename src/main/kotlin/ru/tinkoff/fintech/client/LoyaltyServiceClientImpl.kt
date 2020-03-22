@@ -11,6 +11,6 @@ class LoyaltyServiceClientImpl(
 ) : LoyaltyServiceClient{
 
     override fun getLoyaltyProgram(id: String): LoyaltyProgram {
-        return RestTemplate().getForObject("$uri/$id}", LoyaltyProgram::class.java) ?: throw RestClientException("error")
+        return RestTemplate().getForObject("$uri/$id", LoyaltyProgram::class.java) ?: throw RestClientException("error")
     }
 }

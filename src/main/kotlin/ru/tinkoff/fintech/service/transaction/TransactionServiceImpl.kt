@@ -37,24 +37,41 @@ class TransactionServiceImpl(
 
                 val client = clientService.getClient(card.client)
                 val loyaltyProgram = loyaltyServiceClient.getLoyaltyProgram(card.loyaltyProgram)
-                val loyaltyPaymentSum =loyaltyPaymentRepository.findByCardIdAndSignAndDateTimeAfter(card.id, serviceSign, startOfMonth).stream()
-                        .mapToDouble(LoyaltyPaymentEntity::value).sum()
-                val transactionInfo = TransactionInfo(loyaltyProgram.name,value,loyaltyPaymentSum,mccCode,client.birthDate,client.firstName,client.lastName,client.middleName)
+                val cashbacks =
+                    loyaltyPaymentRepository.findByCardIdAndSignAndDateTimeAfter(card.id, serviceSign, startOfMonth)
+                val loyaltyPaymentSum = cashbacks.stream().mapToDouble(LoyaltyPaymentEntity::value).sum()
+                val transactionInfo = TransactionInfo(
+                    loyaltyProgram.name,
+                    value,
+                    loyaltyPaymentSum,
+                    mccCode,
+                    client.birthDate,
+                    client.firstName,
+                    client.lastName,
+                    client.middleName
+                )
                 val cashbackTotal = cashbackCalculator.calculateCashback(transactionInfo)
 
-                loyaltyPaymentRepository.save(LoyaltyPaymentEntity(
-                    value = cashbackTotal,
-                    cardId = card.id,
-                    sign = serviceSign,
-                    transactionId = transactionId,
-                    dateTime = time
+                loyaltyPaymentRepository.save(
+                    LoyaltyPaymentEntity(
+                        value = cashbackTotal,
+                        cardId = card.id,
+                        sign = serviceSign,
+                        transactionId = transactionId,
+                        dateTime = time
                     )
                 )
-                with(transactionInfo) {
-                    val notificationMessageInfo = NotificationMessageInfo(
-                        firstName, card.cardNumber, cashbackTotal, transactionSum, loyaltyProgramName, time)
-                    notificationService.sendNotification(client.id, notificationMessageInfo)
-                }
+
+                val notificationMessageInfo = NotificationMessageInfo(
+                    transactionInfo.firstName,
+                    card.cardNumber,
+                    cashbackTotal,
+                    transactionInfo.transactionSum,
+                    transactionInfo.loyaltyProgramName,
+                    time
+                )
+                notificationService.sendNotification(client.id, notificationMessageInfo)
+
 
             }
 

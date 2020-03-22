@@ -30,6 +30,7 @@ dependencyManagement {
 
 apply plugin: 'kotlin'
 apply plugin: "kotlin-spring"
+apply plugin: "kotlin-jpa"
 
 dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
@@ -62,6 +63,9 @@ dependencies {
     testCompile group: 'com.h2database', name: 'h2', version: '1.4.200'
 }
 
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+}
 
 test {
     useJUnitPlatform()
