@@ -12,6 +12,6 @@ class ClientServiceImpl(
 ) : ClientService{
 
     override fun getClient(id: String): Client {
-        return RestTemplate().getForObject("$uri/$id}", Client::class.java) ?: throw RestClientException("error")
+        return RestTemplate().getForObject("$uri/$id", Client::class.java) ?: throw RestClientException("error")
     }
 }
