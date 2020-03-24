@@ -1,0 +1,28 @@
+spring:
+  kafka:
+    bootstrap-servers: 40.69.78.245:19092
+  datasource:
+    url: ****
+    username: ****.postgres.database.azure.com
+    password: ****
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL9Dialect
+
+app:
+  topic:
+    transaction: transactions
+
+logging:
+  level:
+    root: WARN
+    org.springframework.web: INFO
+    com.memorynotfound: DEBUG
+
+processing:
+  services:
+    uri:
+      card: http://****/card-service/api/v1/card
+      client: http://****/client-service/api/v1/client
+      loyalty: http://****/loyalty-service/api/v1/program
+      notification: http://****/notification-service/api/v1/client
+  sign: pavlov
